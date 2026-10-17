@@ -1,0 +1,60 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{indentfirst}
+\usepackage{seqsplit}
+
+\setlength{\parindent}{1em}
+
+% ---------------- Metadata ----------------
+\title{\textbf{Assignment 4}\\[0.5em]
+CMPT 276: Introduction to Software Engineering\\
+Simon Fraser University}
+
+\author{
+\textbf{Group 1}\\[0.75em]
+\begin{tabular}{l r}
+Daniil Bugakov & 301540700 \\
+\end{tabular}
+}
+
+\date{\today}
+
+% ==========================================
+
+\begin{document}
+
+\maketitle
+
+\section*{Work Distribution}
+
+I reviewed code written by Dev and identified five code smells.  
+My code was reviewed by Brian, who identified four code smells.
+
+\section*{Code Smells I Assigned to Dev}
+
+The \texttt{canMoveTo()} method in \texttt{MovingEntity.java} uses an unnecessary if/else structure, reducing readability.
+
+There is code duplication in the \texttt{Board} class when converting cell coordinates to pixel coordinates. This occurs in the methods \texttt{isWall()}, \texttt{isOccupied()}, and \texttt{isSpawnable()}.
+
+There is also duplication in cell scanning logic. The same methods repeatedly iterate through \texttt{HashSet<Cell>} to check if a cell exists at a given position. A helper method was suggested.
+
+Weak encapsulation is present in \texttt{MovingEntity}, where fields \texttt{id} and \texttt{position} are declared as \texttt{protected}, allowing direct modification by subclasses.
+
+A long method exists in the \texttt{Guard} class. The \texttt{chooseStepToward()} method combines multiple responsibilities, making it difficult to read, maintain, and test.
+
+\section*{Code Smells Assigned to Me by Brian}
+
+Code-and-paste programming was found in \texttt{BankHeist}, where several components used the same hardcoded size values. These were replaced with constants, and a \texttt{fillBounds()} helper method was introduced.
+
+Primitive obsession was identified in \texttt{BankHeist}, where a primitive value was used in \texttt{\seqsplit{setDefaultCloseOperation()}} instead of a predefined constant.
+
+A long parameter list was found in the \texttt{Cell} constructor. The parameters \texttt{x}, \texttt{y}, \texttt{width}, and \texttt{height} were replaced with \texttt{Position} and \texttt{Dimension} objects. Related classes and tests were updated accordingly.
+
+An anti-pattern was found in \texttt{Thief}, where it checked if the player was inside the board, duplicating logic already present in \texttt{Board}. Redundant checks were removed, and related tests were adjusted.
+
+\section*{Conclusion}
+
+The code review helped identify design and maintenance issues, including code duplication, unnecessary complexity, and weak encapsulation. Refactoring improved readability and maintainability. All changes were tested to ensure the game’s functionality remained correct.
+
+\end{document}
