@@ -1,81 +1,65 @@
-# **CMPT 276 Group 1 Project `Bank Heist`**
+# Bank Heist
 
-**Course:** CMPT 276 D300 \- Introduction to Software Engineering  
-**Instructor:** Jocelyn Minns  
-**Semester:** Spring 2026  
+A 2D grid-based chase game developed in **Java using Swing and Maven**.
 
-## **Group Members**
+The player controls a thief navigating through a bank while collecting money and diamonds, avoiding traps, and escaping from a pursuing guard. The project was developed collaboratively as part of a five-person software engineering team at Simon Fraser University.
 
-| Name | Student ID | Email |
-| :---- | :---- | :---- |
-| Brian Chan | 301439177 | bca93@sfu.ca |
-| Daniil Bugakov | 301540700 | dba73@sfu.ca |
-| Dev Tomar | 301548576 | dst9@sfu.ca |
-| Keith Ng | 301625387 | kwn6@sfu.ca |
-| Mohamad Osman | 301590514 | moa45@sfu.ca |
+## Demo
 
+[▶ Watch Gameplay Demo](https://youtu.be/ZiidlGFFCcc)
 
-## **1\. Project Overview & Description**
+![Bank Heist Gameplay](BankHeist/src/main/resources/group1/interface/BckTutorial.png)
 
-Bank Heist is a 2D grid-based game developed in Java using Swing.
+## Features
 
-The player controls a Thief navigating through a bank while:
+- Grid-based player movement using WASD
+- Guard pursuit behavior
+- Money and diamond collectibles
+- Score tracking and objective progression
+- Trap mechanics
+- Win and loss conditions
+- Exit system triggered after completing objectives
+- Object-oriented Java architecture
+- Maven build automation
+- Automated testing
 
-* Collecting money and diamonds.
-* Avoiding traps and a Guard that actively chases the player.
+## Technologies
 
+- Java 17
+- Java Swing
+- Maven
+- Object-Oriented Programming
+- Git
+- Automated Testing
 
-## **2\. Gameplay**
+## My Contributions
 
-1. Use WASD to move the Thief.
-2. Collect all money and diamonds to earn points.
-3. Avoid the Guard (game ends if caught) and traps (game ends if score gets negative).
-4. Reach the exit after collecting all the money on the map. 
+This project was developed collaboratively by a five-person team.
 
-![Tutorial Gameplay Guide](BankHeist/src/main/resources/group1/interface/BckTutorial.png)
+My contributions included:
 
+- Gameplay development and integration
+- Debugging gameplay and application behavior
+- Testing and validating game functionality
+- Integrating project components with the team's shared codebase
+- Supporting iterative development and issue resolution throughout the project
 
-## **3\. Video Demo**
+## Gameplay
 
-[**▶️ Watch Project Demo on YouTube**](https://youtu.be/ZiidlGFFCcc)
+1. Move the thief using **WASD**.
+2. Collect money and diamonds to increase your score.
+3. Avoid traps and the pursuing guard.
+4. Complete the required objectives.
+5. Reach the exit to successfully finish the heist.
 
+## Project Structure
 
-## **4\. Prerequisites (Fresh Environment)**
-
-To run this project, you need:
-
-* **Java 17** or higher. 
-* **Maven 3.8** or higher.
-* (Optional) VS Code.
-
-
-## **5\. Build Automation**
-
-### **Compile**
-
-Clone the repository and run: 
-```bash
-mvn clean compile
-```
-
-### **Run**
-
-To run the game:
-```bash
-mvn exec:java
-```
-
-### **Test**
-
-To test run:
-```bash
-mvn test
-```
-
-### **Artifacts**
-
-To generate artifacts run:
-```bash
-mvn clean package javadoc:javadoc
-```
-Artifacts are generated inside the target folder.
+```text
+BankHeist/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   └── resources/
+│   └── test/
+├── pom.xml
+└── target/
