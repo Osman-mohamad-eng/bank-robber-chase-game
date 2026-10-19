@@ -19,3 +19,7 @@ web/node_modules/
 web/dist/
 web/.vite/
 *.log
+
+# Local Docker image archives
+bankheist-api-local.tar
+bankheist-dashboard-local.tar

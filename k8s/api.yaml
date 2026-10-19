@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: bankheist
+spec:
+  selector:
+    app: bankheist-api
+  ports:
+    - port: 8080
+      targetPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: bankheist
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: bankheist-api
+
+  template:
+    metadata:
+      labels:
+        app: bankheist-api
+
+    spec:
+      containers:
+        - name: api
+          image: bankheist-api:local
+          imagePullPolicy: Never
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: DB_URL
+              value: jdbc:postgresql://db:5432/bankheist
+
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: bankheist-config
+                  key: DB_USERNAME
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bankheist-config
+                  key: DB_PASSWORD
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 2
+            failureThreshold: 30
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
