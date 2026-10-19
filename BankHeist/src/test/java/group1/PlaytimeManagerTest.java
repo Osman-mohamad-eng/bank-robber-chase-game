@@ -80,16 +80,15 @@ public class PlaytimeManagerTest {
     }
 
     @Test
-    public void testDoubleStartResetsStartTime() throws InterruptedException {
+    public void testDoubleStartPreservesActiveTime() throws InterruptedException {
         pm.start();
         Thread.sleep(50);
-        // Calling start() again resets the session start time without accumulating the previous time
+        long before = pm.getElapsed();
+        // Repeated resume signals must not discard already active gameplay time.
         pm.start();
         long elapsed = pm.getElapsed();
-        // The accumulated time from the first session is not paused,
-        // but the new startTime is reset, so elapsed should be small
-        assertTrue(elapsed < 100,
-                "after a second start(), elapsed should reset the session clock");
+        assertTrue(elapsed >= before,
+                "calling start while already running must preserve elapsed time");
     }
 
     // reset()

@@ -4,6 +4,9 @@ import java.awt.Dimension;
 
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
+import java.net.URI;
+import java.nio.file.Path;
+import group1.results.*;
 
 /**
  * Launches the Bank Heist game.
@@ -24,6 +27,10 @@ public class BankHeist {
  * @param args command line argument
  */
     public static void main(String[] args) {
+      javax.swing.SwingUtilities.invokeLater(BankHeist::launch);
+    }
+
+    private static void launch() {
       
       // Window properties
       JFrame frame = new JFrame("Bank Heist");
@@ -41,14 +48,46 @@ public class BankHeist {
 
       // Request a board from the factory
       BoardFactory factory = new BoardFactory();
-      Board board = factory.makeBoard(3);
+      int level = Integer.parseInt(System.getProperty("bankheist.level", "3"));
+      if (level < 1 || level > 5) throw new IllegalArgumentException("Level must be 1–5.");
+      Board board = factory.makeBoard(level);
       board.setPaused(true);
 
       // Set board size and position
       fillBounds(board);
 
       // Initialize User Interface and link to the board+
-      Interface ui = new Interface(board);
+      Interface ui;
+      try {
+        Path dataDirectory = Path.of(System.getProperty("bankheist.dataDir",
+                Path.of(System.getProperty("user.home"), ".bankheist").toString()));
+        PlayerProfile profile = PlayerProfile.loadOrCreate(dataDirectory,
+                System.getProperty("bankheist.username", System.getenv("BANK_HEIST_USERNAME")));
+        HttpGameServicesClient api = new HttpGameServicesClient(URI.create(
+                System.getProperty("bankheist.apiUrl", System.getenv().getOrDefault("BANK_HEIST_API_URL", "http://localhost:8080"))));
+        AsyncResultReporter reporter = new AsyncResultReporter(api, profile,
+                new PendingResultStore(dataDirectory.resolve("pending")));
+        Runtime.getRuntime().addShutdownHook(new Thread(reporter::close));
+        ui = new Interface(board, reporter, profile.playerId(), level);
+        frame.setTitle("Bank Heist — " + profile.username());
+        javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
+        javax.swing.JMenu services = new javax.swing.JMenu("Game services");
+        javax.swing.JMenuItem openServices = new javax.swing.JMenuItem("Statistics, quests and global leaderboards");
+        Interface activeUi = ui;
+        openServices.addActionListener(event -> {
+          if (activeUi.getState() == Interface.GameState.PLAYING) {
+            activeUi.setState(Interface.GameState.PAUSED);
+          }
+          GameServicesWindow.open(api, profile);
+        });
+        services.add(openServices);
+        menuBar.add(services);
+        frame.setJMenuBar(menuBar);
+      } catch (Exception failure) {
+        java.util.logging.Logger.getLogger(BankHeist.class.getName())
+                .log(java.util.logging.Level.WARNING, "Game services disabled: check profile and API configuration", failure);
+        ui = new Interface(board);
+      }
       fillBounds(ui);
       board.setInterface(ui);
 

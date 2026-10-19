@@ -2,3 +2,20 @@
 **/.DS_Store
 target/
 .idea/
+
+# C++ out-of-source builds, local tools, and generated profiles
+/build*/
+/.tools/
+/profiles/
+/CMakeUserPresets.json
+/.cache/
+/.vscode/
+
+# Game services: local configuration and generated frontend files
+.env
+.env.*
+!.env.example
+web/node_modules/
+web/dist/
+web/.vite/
+*.log

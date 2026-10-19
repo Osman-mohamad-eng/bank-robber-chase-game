@@ -1,0 +1,18 @@
+{
+  "name": "bank-heist-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test test/*.test.mjs",
+    "build": "npm run typecheck && npm test && vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "vite": "8.0.0"
+  }
+}

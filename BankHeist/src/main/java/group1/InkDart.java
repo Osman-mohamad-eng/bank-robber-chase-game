@@ -8,14 +8,11 @@ package group1;
  * @version 1.0
  */
 public class InkDart extends Interactable {
-    private static final int PENALTY_VALUE = -150;
-    private int value;
 
     /**
      * Constructs an InkDart with a default penalty value of -150.
      */
     public InkDart() {
-        this.value = PENALTY_VALUE;
     }
 
     /**
@@ -25,6 +22,6 @@ public class InkDart extends Interactable {
      */
     @Override
     protected void applyEffect(Board board) {
-        board.addBalance(this.value);
+        board.incurPenalty(ScoringRules.INK_DART_PENALTY);
     }
 }

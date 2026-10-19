@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#242521" />
+    <meta name="description" content="Your Bank Heist player record: lifetime statistics, heist history, quests, and global rankings." />
+    <title>Bank Heist — Player headquarters</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#overview" aria-label="Bank Heist headquarters">
+        <span class="brand-mark" aria-hidden="true">B<span>H</span></span>
+        <span>BANK HEIST<small>PLAYER HEADQUARTERS</small></span>
+      </a>
+      <span class="sidebar-label">YOUR OPERATIONS</span>
+      <nav>
+        <a class="nav-link active" href="#overview" aria-current="location"><span aria-hidden="true">◈</span> Overview <span class="nav-arrow" aria-hidden="true">↗</span></a>
+        <a class="nav-link" href="#quests"><span aria-hidden="true">◎</span> Quests</a>
+        <a class="nav-link" href="#history"><span aria-hidden="true">≡</span> Heist history</a>
+        <a class="nav-link" href="#rankings"><span aria-hidden="true">↗</span> Global rankings</a>
+      </nav>
+      <div class="sidebar-bottom"><span class="signal-dot" aria-hidden="true"></span> THE RECORD KEEPER<small>Every heist has a story.</small></div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <span class="breadcrumb">BANK HEIST <span>/</span> HEADQUARTERS</span>
+        <button id="refresh" class="text-button" type="button"><span aria-hidden="true">↻</span> Refresh data</button>
+      </header>
+
+      <main id="main">
+        <section id="overview" class="overview">
+          <div class="page-heading"><div><p class="eyebrow">MAKE YOUR NEXT RUN COUNT</p><h1>Your heist.<br />In the books.</h1><p class="intro">Track your escapes. Take on a quest.<br class="desktop-break" /> See where you stand against the world.</p></div>
+            <div class="vault-art" aria-hidden="true"><div class="vault-frame"><span class="vault-hinge top"></span><span class="vault-hinge bottom"></span><div class="vault-dial"><i></i><b></b></div></div><span class="vault-caption">THE VAULT IS WATCHING.</span></div>
+          </div>
+
+          <div class="profile-bar">
+            <div class="profile-summary"><span id="avatar" class="avatar" aria-hidden="true">?</span><div><span class="eyebrow">PLAYER RECORD</span><h2 id="player-name">Find your player</h2><span id="player-id" class="player-id">Choose a player below to load their record.</span></div></div>
+            <form id="player-form" class="player-form"><label for="player-input">Player UUID</label><div class="input-group"><input id="player-input" name="player" type="text" spellcheck="false" autocomplete="off" placeholder="Paste your player UUID" required aria-describedby="player-help" /><button class="button button-dark" type="submit">Load <span aria-hidden="true">↗</span></button></div></form>
+          </div>
+          <p id="player-help" class="helper">Use the player UUID shown in the desktop game's services window, or select a player from the rankings.</p>
+          <div id="profile-message" class="message" role="status" aria-live="polite"></div>
+
+          <div id="stats" class="stats-grid" aria-label="Lifetime statistics"></div>
+          <div id="personal-bests" class="bests-row" aria-label="Personal bests"></div>
+        </section>
+
+        <section id="quests" class="section">
+          <div class="section-heading"><div><p class="eyebrow">A LITTLE MORE TO PLAY FOR</p><h2>Your next objectives</h2></div><span id="quest-count" class="section-meta">QUEST PROGRESS</span></div>
+          <div id="quest-content" class="quest-grid"><div class="empty-panel">Load a player to see their quests and reward points.</div></div>
+        </section>
+
+        <section id="history" class="section">
+          <div class="section-heading"><div><p class="eyebrow">EVERY ATTEMPT COUNTS</p><h2>Recent heists</h2></div><span class="section-meta">THE FULL PICTURE. WINS &amp; LOSSES.</span></div>
+          <div id="history-content" class="table-panel"><div class="empty-panel">Your completed runs will appear here.</div></div>
+          <div id="history-pagination" class="pagination" aria-label="Heist history pages"></div>
+        </section>
+
+        <section id="rankings" class="section rankings">
+          <div class="section-heading"><div><p class="eyebrow">GOOD COMPANY. GREAT COMPETITION.</p><h2>The global getaway</h2></div><label class="level-label" for="level-filter">Level<select id="level-filter"><option value="">All levels</option><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option><option value="4">Level 4</option><option value="5">Level 5</option></select></label></div>
+          <div class="leaderboard-toolbar"><div class="tabs" role="tablist" aria-label="Leaderboard ranking"><button id="tab-score" type="button" role="tab" aria-selected="true" aria-controls="leaderboard-content" data-metric="score">Highest score</button><button id="tab-money" type="button" role="tab" aria-selected="false" aria-controls="leaderboard-content" data-metric="money" tabindex="-1">Most cash</button><button id="tab-time" type="button" role="tab" aria-selected="false" aria-controls="leaderboard-content" data-metric="time" tabindex="-1">Fastest escape</button></div><span class="section-meta">ONE BEST RUN PER PLAYER</span></div>
+          <p id="leaderboard-description" class="helper">Ranked by each player's highest final score, including rewards and penalties.</p>
+          <div id="leaderboard-content" class="table-panel" role="tabpanel" aria-labelledby="tab-score" aria-live="polite"><div class="empty-panel">Loading global rankings…</div></div>
+          <div id="leaderboard-pagination" class="pagination" aria-label="Leaderboard pages"></div>
+        </section>
+      </main>
+
+      <footer><span class="footer-brand">BANK HEIST <span> / PLAYER HEADQUARTERS</span></span><span id="updated-at">Live records. Earned in game.</span></footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

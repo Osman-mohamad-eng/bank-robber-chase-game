@@ -8,14 +8,11 @@ package group1;
  * @version 1.0
  */
 public class CashStack extends Interactable {
-    private static final int REWARD_VALUE = 100;
-    private int value;
 
     /**
      * Constructs a standard Money stack with a default value of 100
      */
     public CashStack() {
-        this.value = REWARD_VALUE; 
     }
 
     /**
@@ -24,7 +21,7 @@ public class CashStack extends Interactable {
      */
     @Override
     protected void applyEffect(Board board) {
-        board.addBalance(this.value);
+        board.collectCash(ScoringRules.CASH_STACK_VALUE);
         board.decrementStaticMoney();
     }
 }

@@ -46,6 +46,12 @@ public class Board extends JPanel implements GameSession {
 
     // Total score of the player
     private int balance = 0;
+    private long cashCollected;
+    private int diamondsCollected;
+    private long penaltiesIncurred;
+    private boolean finished;
+    private boolean processingTick;
+    private boolean escapeRequested;
 
     // Tracks the required money stacks to unlock the exit
     private int staticMoneyCount = 0;
@@ -465,6 +471,25 @@ public class Board extends JPanel implements GameSession {
         return balance;
     }
 
+    public long getCashCollected() { return cashCollected; }
+    public int getDiamondsCollected() { return diamondsCollected; }
+    public long getPenaltiesIncurred() { return penaltiesIncurred; }
+
+    public void collectCash(int amount) {
+        cashCollected += amount;
+        addBalance(amount);
+    }
+
+    public void collectDiamond() {
+        diamondsCollected++;
+        addBalance(ScoringRules.DIAMOND_VALUE);
+    }
+
+    public void incurPenalty(int amount) {
+        penaltiesIncurred += amount;
+        addBalance(-amount);
+    }
+
     /**
      * Links the game board to the UI manager.
      * 
@@ -505,6 +530,11 @@ public class Board extends JPanel implements GameSession {
         thiefAngle = 0;
         guardAngle = 0;
         balance = 0;
+        cashCollected = 0;
+        diamondsCollected = 0;
+        penaltiesIncurred = 0;
+        finished = false;
+        escapeRequested = false;
         staticMoneyCount = 0;
         activeDiamond = null;
 
@@ -598,7 +628,7 @@ public class Board extends JPanel implements GameSession {
      * @param dCol Change in column direction
      */
     public void moveThief(int dRow, int dCol) {
-        if (thief == null || paused) {
+        if (thief == null || paused || finished) {
             return;
         }
         
@@ -659,6 +689,9 @@ public class Board extends JPanel implements GameSession {
         if (triggeredItem != null) {
             Interactable interactable = triggeredItem.getInteractable();
             interactable.onCollect(this);
+            if (finished) {
+                return;
+            }
 
             if (interactable instanceof RareDiamond) {
                 this.restartDiamondTimer();
@@ -672,20 +705,6 @@ public class Board extends JPanel implements GameSession {
 
             if (triggeredItem == activeDiamond) {
                 activeDiamond = null;
-            }
-        }
-
-        // Check if the thief has reached the escape cell and if the theif has collected all money cells
-        for (Cell exit : exitCells) {
-            if (exit.getX() == col && exit.getY() == row) {
-                if (staticMoneyCount <= 0) {
-                    System.out.println("YOU ESCAPED! Final Balance: $" + balance);
-                    if (gameEvents != null) {
-                        gameEvents.onWin();
-                    }
-                } else {
-                    System.out.println("You still need " + staticMoneyCount + " bags of money.");
-                }
             }
         }
 
@@ -708,8 +727,21 @@ public class Board extends JPanel implements GameSession {
                 if (guard != null && guard.getPosition().equals(thiefPos)) {
                     System.out.println("CAUGHT! The guard captured the thief.");
                     triggerGameOver();
+                    return;
                 }
             }
+
+        // Collision wins precedence over escape; emit exactly one terminal event.
+        for (Cell exit : exitCells) {
+            if (exit.getX() == col && exit.getY() == row && staticMoneyCount <= 0) {
+                if (processingTick) {
+                    escapeRequested = true;
+                } else {
+                    finish(true);
+                }
+                return;
+            }
+        }
 
     }
 
@@ -806,91 +838,105 @@ public class Board extends JPanel implements GameSession {
      */
     private void gameMovement() {
         gameTimer = new Timer(500, e -> {
-            if (paused) {
+            if (paused || finished) {
                 return;
             }
-            tickCount++;
+            processingTick = true;
+            escapeRequested = false;
+            try {
+                tickCount++;
 
-            if (thief != null) {
-                moveThief(inputRow, inputCol);
-            }
-
-            if (thief != null) {
-                Position thiefPos = new Position(thief.getCol(), thief.getRow());
-
-                updateGuardCells();
-
-                guardAccumulator += 1;
-
-                boolean shouldGuardsMove = false;
-                if (guardAccumulator >= GUARD_SPEED) {
-                    shouldGuardsMove = true;
-                    guardAccumulator -= GUARD_SPEED;
+                if (thief != null) {
+                    moveThief(inputRow, inputCol);
                 }
 
-                for (Guard guard : guards) {
-                    if (guard.isFrozen()) {
-                        guard.tickFreeze();
-                    } else if (shouldGuardsMove) {
-                        Position oldPos = guard.getPosition();
-                        guard.update(thiefPos, this);
-                        Position newPos = guard.getPosition();
-
-                        double guardAngle = 0;
-                        if (newPos.getY() < oldPos.getY()) {
-                            guardAngle = 0;
-                        } else if (newPos.getY() > oldPos.getY()) {
-                            guardAngle = 180;
-                        } else if (newPos.getX() < oldPos.getX()) {
-                            guardAngle = 270;
-                        } else if (newPos.getX() > oldPos.getX()) {
-                            guardAngle = 90;
-                        }
-
-                        VisualState vs = guardVisuals.computeIfAbsent(guard, k -> new VisualState());
-                        vs.startDash(
-                                oldPos.getX(),
-                                oldPos.getY(),
-                                newPos.getX(),
-                                newPos.getY(),
-                                cellSize,
-                                guardAngle
-                        );
-
-                        updateGuardCells();
-                    }
-
-                    int gCol = guard.getPosition().getX();
-                    int gRow = guard.getPosition().getY();
-                    int gPixelX = gCol * cellSize;
-                    int gPixelY = gRow * cellSize;
-
-                    Cell triggeredItem = null;
-                    for (Cell item : interactableCells) {
-                        if (item.getX() == gPixelX && item.getY() == gPixelY) {
-                            triggeredItem = item;
-                            break;
-                        }
-                    }
-
-                    if (triggeredItem != null && triggeredItem.getInteractable() instanceof GlueTrap) {
-                        guard.freeze(3);
-                        interactableCells.remove(triggeredItem);
-                        emptyCells.add(makeCell(emptyImage, gCol, gRow));
-                        System.out.println("The Guard stepped in a Glue Trap!");
-                    }
-
-                    if (guard.getPosition().equals(thiefPos)) {
-                        System.out.println("CAUGHT! The guard captured the thief.");
-                        triggerGameOver();
-                        return;
-                    }
+                if (finished) {
+                    return;
                 }
 
-                updateGuardCells();
-            }
+                if (thief != null) {
+                    Position thiefPos = new Position(thief.getCol(), thief.getRow());
 
-            repaint();
+                    updateGuardCells();
+
+                    guardAccumulator += 1;
+
+                    boolean shouldGuardsMove = false;
+                    if (guardAccumulator >= GUARD_SPEED) {
+                        shouldGuardsMove = true;
+                        guardAccumulator -= GUARD_SPEED;
+                    }
+
+                    for (Guard guard : guards) {
+                        if (guard.isFrozen()) {
+                            guard.tickFreeze();
+                        } else if (shouldGuardsMove) {
+                            Position oldPos = guard.getPosition();
+                            guard.update(thiefPos, this);
+                            Position newPos = guard.getPosition();
+
+                            double guardAngle = 0;
+                            if (newPos.getY() < oldPos.getY()) {
+                                guardAngle = 0;
+                            } else if (newPos.getY() > oldPos.getY()) {
+                                guardAngle = 180;
+                            } else if (newPos.getX() < oldPos.getX()) {
+                                guardAngle = 270;
+                            } else if (newPos.getX() > oldPos.getX()) {
+                                guardAngle = 90;
+                            }
+
+                            VisualState vs = guardVisuals.computeIfAbsent(guard, k -> new VisualState());
+                            vs.startDash(
+                                    oldPos.getX(),
+                                    oldPos.getY(),
+                                    newPos.getX(),
+                                    newPos.getY(),
+                                    cellSize,
+                                    guardAngle
+                            );
+
+                            updateGuardCells();
+                        }
+
+                        int gCol = guard.getPosition().getX();
+                        int gRow = guard.getPosition().getY();
+                        int gPixelX = gCol * cellSize;
+                        int gPixelY = gRow * cellSize;
+
+                        Cell triggeredItem = null;
+                        for (Cell item : interactableCells) {
+                            if (item.getX() == gPixelX && item.getY() == gPixelY) {
+                                triggeredItem = item;
+                                break;
+                            }
+                        }
+
+                        if (triggeredItem != null && triggeredItem.getInteractable() instanceof GlueTrap) {
+                            guard.freeze(3);
+                            interactableCells.remove(triggeredItem);
+                            emptyCells.add(makeCell(emptyImage, gCol, gRow));
+                            System.out.println("The Guard stepped in a Glue Trap!");
+                        }
+
+                        if (guard.getPosition().equals(thiefPos)) {
+                            System.out.println("CAUGHT! The guard captured the thief.");
+                            triggerGameOver();
+                            return;
+                        }
+                    }
+
+                    updateGuardCells();
+                }
+
+                if (escapeRequested && !finished) {
+                    finish(true);
+                }
+                repaint();
+            } finally {
+                processingTick = false;
+                escapeRequested = false;
+            }
         });
 
         gameTimer.start();
@@ -1120,6 +1166,15 @@ public class Board extends JPanel implements GameSession {
      * Stops all active timers and updates user interface state.
      */
     private void triggerGameOver() {
+        finish(false);
+    }
+
+    private void finish(boolean won) {
+        if (finished) {
+            return;
+        }
+        finished = true;
+        escapeRequested = false;
         paused = true;
 
         if (diamondSpawner != null) {
@@ -1131,7 +1186,11 @@ public class Board extends JPanel implements GameSession {
         }
 
         if (gameEvents != null) {
-            gameEvents.onGameOver();
+            if (won) {
+                gameEvents.onWin();
+            } else {
+                gameEvents.onGameOver();
+            }
         }
     }
 

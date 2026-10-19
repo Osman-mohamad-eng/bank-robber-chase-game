@@ -10,6 +10,10 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.UUID;
+import java.time.Instant;
+import group1.results.HeistResult;
+import group1.results.ResultReporter;
 
 // Manages all non-gameplay screens and the in-game HUD
 //
@@ -269,6 +273,10 @@ public class Interface extends JPanel {
     // FIELDS
     private GameState state;
     private final GameSession gameSession;
+    private final ResultReporter resultReporter;
+    private final UUID playerId;
+    private final int level;
+    private UUID attemptId;
     private final List<UIButton> buttons = new ArrayList<>();
     private final EnumMap<GameState, List<ButtonSpec>> buttonLayouts = new EnumMap<>(GameState.class);
     private final EnumMap<GameState, ScreenSequence> screenSequences = new EnumMap<>(GameState.class);
@@ -326,7 +334,14 @@ public class Interface extends JPanel {
      * @param gameSession the game session this interface is paired with
      */
     public Interface(GameSession gameSession) {
+        this(gameSession, ResultReporter.NONE, null, 1);
+    }
+
+    public Interface(GameSession gameSession, ResultReporter reporter, UUID playerId, int level) {
         this.gameSession = gameSession;
+        this.resultReporter = reporter;
+        this.playerId = playerId;
+        this.level = level;
         setOpaque(false);
         setLayout(null);
         setFocusable(true);
@@ -420,8 +435,11 @@ public class Interface extends JPanel {
             if (this.state != GameState.PAUSED && this.state != GameState.TUTORIAL) {
                 // New game/ Reset
                 playtime.reset();
+                attemptId = UUID.randomUUID();
             }
-            playtime.start();
+            if (!shouldRunStartTransition(previousState, newState)) {
+                playtime.start();
+            }
         } else if (this.state == GameState.PLAYING) {
             playtime.pause();
         }
@@ -444,6 +462,20 @@ public class Interface extends JPanel {
         }
         buildButtons();
         syncPausedState();
+        if ((newState == GameState.WIN || newState == GameState.GAME_OVER)
+                && attemptId != null) {
+            UUID completedAttempt = attemptId;
+            attemptId = null;
+            if (playerId != null) {
+                resultReporter.submit(new HeistResult(completedAttempt, playerId, level,
+                        gameSession.getCashCollected(), gameSession.getDiamondsCollected(),
+                        gameSession.getPenaltiesIncurred(), gameSession.getBalance(),
+                        playtime.getFinalTime(), newState == GameState.WIN ? "WON" : "LOST",
+                        Instant.now().toString()));
+            }
+        } else if (newState == GameState.MAIN_MENU) {
+            attemptId = null;
+        }
         repaint();
     }
 
@@ -762,6 +794,7 @@ public class Interface extends JPanel {
 
         if (getStartTransitionProgress() >= 1f) {
             startTransitionRunning = false;
+            playtime.start();
             syncPausedState();
             return true;
         }

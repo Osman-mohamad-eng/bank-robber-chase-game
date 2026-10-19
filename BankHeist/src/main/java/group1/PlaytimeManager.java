@@ -22,7 +22,8 @@ public class PlaytimeManager {
      * Records the current system time as the sessions start.
      */
     public void start() {
-        startTime = System.currentTimeMillis();
+        if (running) return;
+        startTime = System.nanoTime();
         running = true;
     }
 
@@ -32,7 +33,7 @@ public class PlaytimeManager {
      */
     public void pause() {
         if (running) {
-            accumulatedTime += System.currentTimeMillis() - startTime;
+            accumulatedTime += (System.nanoTime() - startTime) / 1_000_000;
             finalTime = accumulatedTime;
             running = false;
         }
@@ -56,7 +57,7 @@ public class PlaytimeManager {
      */
     public long getElapsed() {
         if (running) {
-            return accumulatedTime + (System.currentTimeMillis() - startTime);
+            return accumulatedTime + (System.nanoTime() - startTime) / 1_000_000;
         }
         return accumulatedTime;
     }

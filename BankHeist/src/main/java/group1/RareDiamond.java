@@ -8,14 +8,11 @@ package group1;
  * @version 1.0
 */
 public class RareDiamond extends Interactable {
-    private static final int REWARD_VALUE = 500;
-    private int value;
 
     /**
      * Constructs a Diamond with a high reward value of 500
      */
     public RareDiamond() {
-        this.value = REWARD_VALUE;
     }
 
     /**
@@ -24,6 +21,6 @@ public class RareDiamond extends Interactable {
      */
     @Override
     protected void applyEffect(Board board) {
-        board.addBalance(this.value);
+        board.collectDiamond();
     }
 }
