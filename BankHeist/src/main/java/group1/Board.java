@@ -506,16 +506,24 @@ public class Board extends JPanel implements GameSession {
      * @param paused true to pause game, false to resume
      */
     public void setPaused(boolean paused) {
-        this.paused = paused;
+    this.paused = paused;
 
-        if (diamondSpawner != null) {
-            if (paused) {
-                diamondSpawner.stop();
-            } else {
-                diamondSpawner.start();
-            }
+    if (gameTimer != null) {
+        if (paused) {
+            gameTimer.stop();
+        } else if (!finished && !gameTimer.isRunning()) {
+            gameTimer.start();
         }
     }
+
+    if (diamondSpawner != null) {
+        if (paused) {
+            diamondSpawner.stop();
+        } else {
+            diamondSpawner.start();
+        }
+    }
+}
 
     public void setGameEvents(GameEvents events) {
         this.gameEvents = events;
@@ -556,9 +564,9 @@ public class Board extends JPanel implements GameSession {
         inputRow = 0;
         inputCol = 0;
 
-        if (gameTimer != null && !gameTimer.isRunning()) {
-            gameTimer.start();
-        }
+        if (!paused && gameTimer != null && !gameTimer.isRunning()) {
+    gameTimer.start();
+}
         if (!paused && diamondSpawner != null) {
             diamondSpawner.start();
         }
@@ -939,7 +947,7 @@ public class Board extends JPanel implements GameSession {
             }
         });
 
-        gameTimer.start();
+
     }
     /**
      * Updates the state of the diamond on the board.
